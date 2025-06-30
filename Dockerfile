@@ -1,27 +1,25 @@
 FROM python:3.12-slim
 
-# Evita problemas con encoding
-ENV PYTHONUNBUFFERED=1
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Instala dependencias necesarias para Chrome y Selenium
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
-    wget unzip curl gnupg2 \
-    fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 \
-    libatk1.0-0 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 \
-    libnspr4 libnss3 libx11-xcb1 libxcomposite1 libxdamage1 \
-    libxrandr2 xdg-utils libu2f-udev \
+    wget unzip gnupg curl \
     chromium chromium-driver \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Instala dependencias Python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Configurar Selenium para usar Chrome
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
-# Copia el código del bot al contenedor
-COPY . /app
+# Crear carpeta de trabajo
 WORKDIR /app
 
-# Comando para ejecutar tu script
-CMD ["python", "nombre_de_tu_script.py"]
+# Copiar archivos
+COPY . /app
+
+# Instalar dependencias de Python
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Comando de ejecución
+CMD ["python", "nombre_del_archivo.py"]
