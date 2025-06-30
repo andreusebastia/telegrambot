@@ -1,0 +1,9 @@
+services:
+  - type: worker
+    name: amazon-rank-bot
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      playwright install
+    startCommand: python main.py
