@@ -2,12 +2,16 @@ import asyncio
 from telegram import Bot
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
 
 BOT_TOKEN = "8180882685:AAHb7zYf3v-Xr1inr0JQly7_p-oDLj4aWWw"
 CHAT_ID = "1688985791"
 
+# ASIN + nombre personalizado para identificar el producto
 productos = [
     {"asin": "B08DFX7GHS", "nombre": "Mini Elíptica"},
     {"asin": "B0DNG5ZWT5", "nombre": "ECO-4010"},
@@ -27,7 +31,9 @@ def get_second_category_rank(asin):
     print(f"🔎 Procesando {asin}")
     try:
         driver.get(url)
-        time.sleep(5)
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.ID, "wayfinding-breadcrumbs_feature_div"))
+        )
         soup = BeautifulSoup(driver.page_source, 'html.parser')
 
         all_text = soup.get_text(separator="\n")
@@ -50,8 +56,6 @@ def get_second_category_rank(asin):
 
 async def main():
     bot = Bot(token=BOT_TOKEN)
-    separador = "🔄 *Nueva ejecución del chequeo de rankings*\n━━━━━━━━━━━━━━━━━━━━━━━"
-    await bot.send_message(chat_id=CHAT_ID, text=separador, parse_mode="Markdown")
     for producto in productos:
         asin = producto["asin"]
         nombre = producto["nombre"]
@@ -60,7 +64,11 @@ async def main():
         await bot.send_message(chat_id=CHAT_ID, text=mensaje)
         time.sleep(2)
 
+    # Separador para siguiente ejecución
+    await bot.send_message(chat_id=CHAT_ID, text="⏱️ Próximo chequeo en 2 horas...")
+
 if __name__ == "__main__":
     while True:
         asyncio.run(main())
+        print("⏱️ Esperando 2 horas para la próxima ejecución...")
         time.sleep(2 * 60 * 60)
